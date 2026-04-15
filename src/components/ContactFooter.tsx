@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
 import { Mail, User, MessageSquare, Send, MapPin, Instagram, Twitter, Globe, CheckCircle, AlertCircle } from 'lucide-react';
+import HCaptcha from '@hcaptcha/react-hcaptcha';
 
 const locations = [
   {
@@ -25,13 +26,24 @@ type FormStatus = 'idle' | 'loading' | 'success' | 'error';
 export const ContactLocation = () => {
   const [status, setStatus] = useState<FormStatus>('idle');
   const [message, setMessage] = useState('');
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
+  const captchaRef = useRef<HCaptcha>(null);
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    if (!captchaToken) {
+      setStatus('error');
+      setMessage('Silakan selesaikan captcha terlebih dahulu');
+      setTimeout(() => setStatus('idle'), 3000);
+      return;
+    }
+
     setStatus('loading');
     
     const formData = new FormData(e.currentTarget);
     formData.append('access_key', 'YOUR_WEB3FORMS_ACCESS_KEY');
+    formData.append('h-captcha-response', captchaToken);
 
     try {
       const response = await fetch('https://api.web3forms.com/submit', {
@@ -45,6 +57,8 @@ export const ContactLocation = () => {
         setStatus('success');
         setMessage('Pesan Anda telah terkirim! Terima kasih.');
         (e.target as HTMLFormElement).reset();
+        captchaRef.current?.resetCaptcha();
+        setCaptchaToken(null);
         setTimeout(() => setStatus('idle'), 3000);
       } else {
         throw new Error(data.message);
@@ -108,6 +122,16 @@ export const ContactLocation = () => {
                     className="w-full glass bg-white/5 rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-ocean-aqua/50 transition-all resize-none"
                   />
                 </div>
+              </div>
+
+              <div className="flex justify-center py-2">
+                <HCaptcha
+                  sitekey="50b2fe65-b00b-4b9e-ad62-3ba471098be2"
+                  reCaptchaCompat={false}
+                  onVerify={(token) => setCaptchaToken(token)}
+                  onExpire={() => setCaptchaToken(null)}
+                  ref={captchaRef}
+                />
               </div>
 
               <button 
