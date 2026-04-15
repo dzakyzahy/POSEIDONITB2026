@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'motion/react';
-import { Mail, User, MessageSquare, Send, MapPin, Instagram, Twitter, Globe, Github } from 'lucide-react';
+import { Mail, User, MessageSquare, Send, MapPin, Instagram, Twitter, Globe, CheckCircle, AlertCircle } from 'lucide-react';
 
 const locations = [
   {
@@ -20,7 +20,42 @@ const locations = [
   }
 ];
 
+type FormStatus = 'idle' | 'loading' | 'success' | 'error';
+
 export const ContactLocation = () => {
+  const [status, setStatus] = useState<FormStatus>('idle');
+  const [message, setMessage] = useState('');
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    setStatus('loading');
+    
+    const formData = new FormData(e.currentTarget);
+    formData.append('access_key', 'YOUR_WEB3FORMS_ACCESS_KEY');
+
+    try {
+      const response = await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        body: formData
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        setStatus('success');
+        setMessage('Pesan Anda telah terkirim! Terima kasih.');
+        (e.target as HTMLFormElement).reset();
+        setTimeout(() => setStatus('idle'), 3000);
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (err) {
+      setStatus('error');
+      setMessage('Gagal mengirim pesan. Silakan coba lagi.');
+      setTimeout(() => setStatus('idle'), 3000);
+    }
+  };
+
   return (
     <section id="contact" className="section-padding">
       <div className="max-w-7xl mx-auto">
@@ -32,13 +67,15 @@ export const ContactLocation = () => {
             viewport={{ once: true }}
           >
             <h2 className="heading-lg mb-8">Hubungi Kami</h2>
-            <form className="space-y-6" onSubmit={(e) => e.preventDefault()}>
+            <form className="space-y-6" onSubmit={handleSubmit}>
               <div className="space-y-2">
                 <label className="text-sm font-medium opacity-60 ml-1">Nama Lengkap</label>
                 <div className="relative">
                   <User className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input 
+                    name="name"
                     type="text" 
+                    required
                     placeholder="Masukkan nama Anda"
                     className="w-full glass bg-white/5 rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-ocean-aqua/50 transition-all"
                   />
@@ -50,7 +87,9 @@ export const ContactLocation = () => {
                 <div className="relative">
                   <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-white/40" />
                   <input 
+                    name="email"
                     type="email" 
+                    required
                     placeholder="email@example.com"
                     className="w-full glass bg-white/5 rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-ocean-aqua/50 transition-all"
                   />
@@ -62,17 +101,58 @@ export const ContactLocation = () => {
                 <div className="relative">
                   <MessageSquare className="absolute left-4 top-6 w-5 h-5 text-white/40" />
                   <textarea 
+                    name="message"
                     rows={4}
+                    required
                     placeholder="Apa yang ingin Anda sampaikan?"
                     className="w-full glass bg-white/5 rounded-xl py-4 pl-12 pr-4 outline-none focus:ring-2 focus:ring-ocean-aqua/50 transition-all resize-none"
                   />
                 </div>
               </div>
 
-              <button className="glass-button w-full bg-ocean-aqua/20 py-4">
-                Kirim Pesan
-                <Send className="w-4 h-4" />
+              <button 
+                type="submit"
+                disabled={status === 'loading'}
+                className="glass-button w-full bg-ocean-aqua/20 py-4 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {status === 'loading' ? (
+                  <>
+                    <motion.div
+                      animate={{ rotate: 360 }}
+                      transition={{ repeat: Infinity, duration: 1, ease: "linear" }}
+                      className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full"
+                    />
+                    Mengirim...
+                  </>
+                ) : (
+                  <>
+                    Kirim Pesan
+                    <Send className="w-4 h-4" />
+                  </>
+                )}
               </button>
+
+              {status === 'success' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-green-400 text-sm font-medium bg-green-400/10 p-4 rounded-xl border border-green-400/20"
+                >
+                  <CheckCircle className="w-5 h-5" />
+                  {message}
+                </motion.div>
+              )}
+
+              {status === 'error' && (
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="flex items-center gap-2 text-red-400 text-sm font-medium bg-red-400/10 p-4 rounded-xl border border-red-400/20"
+                >
+                  <AlertCircle className="w-5 h-5" />
+                  {message}
+                </motion.div>
+              )}
             </form>
           </motion.div>
 

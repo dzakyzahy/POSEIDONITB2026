@@ -11,6 +11,7 @@ import {
   Recycle, 
   ClipboardCheck 
 } from 'lucide-react';
+import { SpotlightCard } from './SpotlightCard';
 
 const products = [
   {
@@ -103,19 +104,20 @@ export const Products = () => {
               whileInView={{ opacity: 1, scale: 1 }}
               viewport={{ once: true }}
               transition={{ delay: idx * 0.05 }}
-              className="glass-card group"
             >
-              <div className="mb-6 inline-flex p-4 glass rounded-2xl text-ocean-aqua group-hover:bg-ocean-aqua group-hover:text-white transition-all duration-500">
-                <product.icon className="w-8 h-8" />
-              </div>
-              <div className="flex items-center gap-2 mb-2">
-                <h3 className="text-xl font-bold font-display">{product.name}</h3>
-                <span className="text-[10px] px-2 py-0.5 glass rounded-full opacity-60">PROKER</span>
-              </div>
-              <h4 className="text-sm font-medium text-ocean-aqua mb-4 uppercase tracking-wider">{product.full}</h4>
-              <p className="text-sm text-white/60 leading-relaxed">
-                {product.desc}
-              </p>
+              <SpotlightCard className="h-full">
+                <div className="mb-6 inline-flex p-4 glass rounded-2xl text-ocean-aqua group-hover:bg-ocean-aqua group-hover:text-white transition-all duration-500">
+                  <product.icon className="w-8 h-8" />
+                </div>
+                <div className="flex items-center gap-2 mb-2">
+                  <h3 className="text-xl font-bold font-display">{product.name}</h3>
+                  <span className="text-[10px] px-2 py-0.5 glass rounded-full opacity-60">PROKER</span>
+                </div>
+                <h4 className="text-sm font-medium text-ocean-aqua mb-4 uppercase tracking-wider">{product.full}</h4>
+                <p className="text-sm text-white/60 leading-relaxed">
+                  {product.desc}
+                </p>
+              </SpotlightCard>
             </motion.div>
           ))}
         </div>
